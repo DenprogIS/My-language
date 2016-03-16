@@ -1,0 +1,6 @@
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpretator\interpretator\bin\Debug\interpretator.exe.config
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpretator\interpretator\bin\Debug\interpretator.exe
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpretator\interpretator\bin\Debug\interpretator.pdb
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpretator\interpretator\obj\Debug\interpretator.csprojResolveAssemblyReference.cache
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpretator\interpretator\obj\Debug\interpretator.exe
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpretator\interpretator\obj\Debug\interpretator.pdb
