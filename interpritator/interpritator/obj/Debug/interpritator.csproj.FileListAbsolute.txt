@@ -1,0 +1,6 @@
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpritator\interpritator\bin\Debug\interpritator.exe.config
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpritator\interpritator\bin\Debug\interpritator.exe
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpritator\interpritator\bin\Debug\interpritator.pdb
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpritator\interpritator\obj\Debug\interpritator.csprojResolveAssemblyReference.cache
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpritator\interpritator\obj\Debug\interpritator.exe
+C:\Users\user\Documents\Visual Studio 2015\Projects\interpritator\interpritator\obj\Debug\interpritator.pdb
