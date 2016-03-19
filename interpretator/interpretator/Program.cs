@@ -13,6 +13,8 @@ namespace interpretator
             ID_EXPECTED = 3, END_SYMBOL_EXPECTED = 4, ASSIGNER_OPERATOR_EXPECTED = 5,
             OPERATOR_EXPECTED = 6, MATH_ID_EXPECTED = 7, OPERATOR_OR_END_SYMBOL_EXPECTED = 8;
 
+        const int OUT = 0, IN = 1;
+
         private static int g_StrigOfSyntaxError;
 
         private static ArrayList g_VariablesList = new ArrayList();
@@ -21,7 +23,7 @@ namespace interpretator
 
         private static ArrayList g_Lexems = new ArrayList();
 
-        private static ArrayList g_variants = new ArrayList();
+        private static ArrayList g_Code = new ArrayList();
 
         private static void addTokenToListTokensBeforeDelimiter(string pa_lexem, ref ArrayList pa_tokens, char pa_currentSymbol)
         {
@@ -34,14 +36,6 @@ namespace interpretator
             else if ((pa_lexem == "new") || (pa_lexem == "out") || (pa_lexem == "in"))
             {
                 pa_tokens.Add(TYPICAL);
-            }
-            else if (pa_lexem == "start")
-            {
-                pa_tokens.Add(START);
-            }
-            else if (pa_lexem == "stop")
-            {
-                pa_tokens.Add(STOP);
             }
             else if ((pa_lexem != "") && (pa_lexem != " "))
             {
@@ -104,14 +98,12 @@ namespace interpretator
             }
 
             int count = 0;
-            foreach (int token in tokens)
+            for (int i=0; i<tokens.Count; i++)
             {
-                if (token == ASSIGNER_OPERATOR)
-                    break;
-
+                if ((int)tokens[i] == ASSIGNER_OPERATOR)
+                    tokens[count - 1] = ASSIGNER_ID;
                 count++;
             }
-            tokens[count - 1] = ASSIGNER_ID;
 
             g_Tokens = tokens;
 
@@ -248,28 +240,61 @@ namespace interpretator
 
         private static void pseudoCodeConverter(string pa_sourceCode)
         {
-           while (pa_sourceCode!="")
-            {
-                ArrayList identifiers = new ArrayList();
-                identifiers = getListIdentifiersFromCode();
+            pa_sourceCode = pa_sourceCode.Substring(pa_sourceCode.IndexOf("main"));
+            string content = insertContentFromCode(pa_sourceCode);
+            ArrayList identifiers = new ArrayList();
+            identifiers = getListIdentifiersFromCode();
+            int tasksCount = getTasksCount();
 
-                string content = insertContentFromCode(pa_sourceCode);
+            while (content!="")
+            {
                 string stringOfCode = content.Substring(0, content.IndexOf(";"));
-                string publicCode = "";
 
                 if (stringOfCode.IndexOf("new") != -1)
                 {
+                    ArrayList variants = new ArrayList();
                     g_VariablesList.Add(identifiers[0]);
-                    publicCode += identifiers[0] + Environment.NewLine;
+                    variants.Add(identifiers[0] + Environment.NewLine);
+                    g_Code.Add(variants);
                     identifiers.RemoveAt(0);
                 }else if (stringOfCode.IndexOf("out") != -1)
                 {
-                    for(int i=0; i<g_variants.Count; i++)
+                    string varName = "";
+                    foreach (string var in g_VariablesList)
                     {
-                        g_variants[i]+= "out a" + Environment.NewLine;
+                        if (var==(string)identifiers[0])
+                        {
+                            varName = var;
+                        }
+                    }
+                    if (varName != "")
+                    {
+                        ArrayList variants = new ArrayList();
+                        variants.Add(Convert.ToString(OUT) + ")" + varName + Environment.NewLine);
+                        g_Code.Add(variants);
+                    } else
+                    {
+                        ArrayList variants = new ArrayList();
+                        for (int i = 0; i < tasksCount; i++)
+                        {
+                            variants.Add(Convert.ToString(OUT) + ")" + "[" + i + "]" + Environment.NewLine);
+                        }
+                        g_Code.Add(variants);
                     }
                 }
+                content = content.Substring(content.IndexOf(";")+1);
             }
+        }
+
+        private static int getTasksCount()
+        {
+            int count = 0;
+            foreach(int token in g_Tokens)
+            {
+                if (token == TASK)
+                    count++;
+            }
+            return count;
         }
 
         static void Main(string[] args)
@@ -278,7 +303,8 @@ namespace interpretator
             string code = file.ReadToEnd();
             string sourceCode = code.Replace("\r", "");
             sourceCode = sourceCode.Replace("\n", "");
-            if (Analyze(sourceCode) == -1) //-1 - code seccesfull operation
+            int errorType = Analyze(sourceCode); //-1 - code seccesfull operation
+            if (errorType == -1) 
             {
                 pseudoCodeConverter(sourceCode);
             }
