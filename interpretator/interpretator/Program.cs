@@ -7,13 +7,13 @@ namespace interpretator
     class Program
     {
         const int MAIN = 0, TASK = 1, OPERATOR = 2, TYPICAL = 3, END_SYMBOL = 4, OPEN_FIGURE = 5,
-            CLOSE_FIGURE = 6, ASSIGNER_ID = 7, START = 8, STOP = 9, ASSIGNER_OPERATOR = 10, ID = 11;
+            CLOSE_FIGURE = 6, ASSIGNER_ID = 7, ASSIGNER_OPERATOR = 10, ID = 11;
 
         const int BLOCK_EXPECTED = 0, OPEN_FIGURE_EXPECTED = 1, CONTENT_EXPECTED = 2,
             ID_EXPECTED = 3, END_SYMBOL_EXPECTED = 4, ASSIGNER_OPERATOR_EXPECTED = 5,
             OPERATOR_EXPECTED = 6, MATH_ID_EXPECTED = 7, OPERATOR_OR_END_SYMBOL_EXPECTED = 8;
 
-        const int OUT = 0, IN = 1;
+        const int OUT = 0, IN = 1, PUSH_ID_OR_ASSIGNER = 2, PUSH_OPERATOR_OR_ASSIGNER_OPERATOR = 3;
 
         private static int g_StrigOfSyntaxError;
 
@@ -216,7 +216,7 @@ namespace interpretator
             int count = 0;
             foreach (int token in g_Tokens)
             {
-                if ((int)token == ID)
+                if (((int)token == ID) || ((int)token == ASSIGNER_ID))
                 {
                     identifiers.Add(g_Lexems[count]);
                 }
@@ -237,6 +237,88 @@ namespace interpretator
                 (g_CodeThreads[pa_threadIndex] as string) += "new " + 
             }
         }*/
+        private static string getVarName(ArrayList pa_identifiers)
+        {
+            string varName = "";
+            foreach (string var in g_VariablesList)
+            {
+                if (var == (string)pa_identifiers[0])
+                {
+                    varName = var;
+                }
+            }
+            return varName;
+        }
+
+        private static void writeCommand(int pa_commandOpcode, ref ArrayList pa_ref_identifiers)
+        {
+            string varName = getVarName(pa_ref_identifiers);
+            int tasksCount = getTasksCount();
+
+            if (varName != "")
+            {
+                ArrayList variants = new ArrayList();
+                variants.Add(Convert.ToString(pa_commandOpcode) + ")" + varName + Environment.NewLine);
+                g_Code.Add(variants);
+            }
+            else
+            {
+                ArrayList variants = new ArrayList();
+                for (int i = 0; i < tasksCount; i++)
+                {
+                    variants.Add(Convert.ToString(pa_commandOpcode) + ")" + "[" + i + "]" + Environment.NewLine);
+                }
+                g_Code.Add(variants);
+            }
+
+            pa_ref_identifiers.RemoveAt(0);
+        }
+
+        private static bool IsNaN(int value)
+        {
+            return double.IsNaN(value);
+        }
+
+        private static void treatmentMathOP(ref ArrayList pa_ref_identifiers, string pa_stringOfCode)
+        {
+            string varName = getVarName(pa_ref_identifiers);
+            int tasksCount = getTasksCount();
+
+            pa_stringOfCode = pa_stringOfCode.Replace(" ", "");
+
+            char operatorORassignerOperator=' ';
+
+            while (pa_stringOfCode!="")
+            {
+                if (varName != "")
+                {
+                    ArrayList variants = new ArrayList();
+                    ArrayList operatorArrayList = new ArrayList();
+                    variants.Add(Convert.ToString(PUSH_ID_OR_ASSIGNER) + ")" + varName + Environment.NewLine);
+
+                    if (pa_stringOfCode.IndexOf(varName) + varName.Length < pa_stringOfCode.Length)
+                    {
+                        operatorORassignerOperator = pa_stringOfCode[pa_stringOfCode.IndexOf(varName) + varName.Length];
+                        operatorArrayList.Add(Convert.ToString(PUSH_OPERATOR_OR_ASSIGNER_OPERATOR) + ")" + operatorORassignerOperator + Environment.NewLine);
+                    }
+
+                    g_Code.Add(variants);
+                    g_Code.Add(operatorArrayList);
+
+                    pa_stringOfCode = pa_stringOfCode.Substring(pa_stringOfCode.IndexOf(operatorORassignerOperator)+1);
+                }
+                else
+                {
+                    /*if ()
+                    ArrayList variants = new ArrayList();
+                    for (int i = 0; i < tasksCount; i++)
+                    {
+                        variants.Add(Convert.ToString(90) + ")" + "[" + i + "]" + Environment.NewLine);
+                    }
+                    g_Code.Add(variants);*/
+                }
+            }
+        }
 
         private static void pseudoCodeConverter(string pa_sourceCode)
         {
@@ -244,7 +326,6 @@ namespace interpretator
             string content = insertContentFromCode(pa_sourceCode);
             ArrayList identifiers = new ArrayList();
             identifiers = getListIdentifiersFromCode();
-            int tasksCount = getTasksCount();
 
             while (content!="")
             {
@@ -259,29 +340,15 @@ namespace interpretator
                     identifiers.RemoveAt(0);
                 }else if (stringOfCode.IndexOf("out") != -1)
                 {
-                    string varName = "";
-                    foreach (string var in g_VariablesList)
-                    {
-                        if (var==(string)identifiers[0])
-                        {
-                            varName = var;
-                        }
-                    }
-                    if (varName != "")
-                    {
-                        ArrayList variants = new ArrayList();
-                        variants.Add(Convert.ToString(OUT) + ")" + varName + Environment.NewLine);
-                        g_Code.Add(variants);
-                    } else
-                    {
-                        ArrayList variants = new ArrayList();
-                        for (int i = 0; i < tasksCount; i++)
-                        {
-                            variants.Add(Convert.ToString(OUT) + ")" + "[" + i + "]" + Environment.NewLine);
-                        }
-                        g_Code.Add(variants);
-                    }
+                    writeCommand(OUT,ref identifiers);
+                }else if (stringOfCode.IndexOf("in") != -1)
+                {
+                    writeCommand(IN,ref identifiers);
+                }else if (stringOfCode.IndexOf("=") != -1)
+                {
+                    treatmentMathOP(ref identifiers, stringOfCode);
                 }
+
                 content = content.Substring(content.IndexOf(";")+1);
             }
         }
