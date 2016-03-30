@@ -451,6 +451,29 @@ namespace interpretator
                     variants.Add(Convert.ToString(i));
                 }
                 generate(1,places,"",variants);
+
+                selectionCodeForVM();
+            }
+        }
+
+        private static void selectionCodeForVM()
+        {
+            string currentCode="";
+            for (int i=0; i<g_AllCombinations.Count; i++)
+            {
+                foreach(ArrayList stringOfCode in g_Code)
+                {
+                    if (stringOfCode.Count>1)
+                    {
+                        int variant = Convert.ToInt32((g_AllCombinations[i] as string).Substring(0, (g_AllCombinations[i] as string).IndexOf(" ")));
+                        currentCode += stringOfCode[variant];
+                        g_AllCombinations[i] = (g_AllCombinations[i] as string).Remove(0,(g_AllCombinations[i] as string).IndexOf(" ")+1);
+                    }else
+                    {
+                        currentCode += stringOfCode[0];
+                    }
+                }
+                currentCode = "";
             }
         }
 
