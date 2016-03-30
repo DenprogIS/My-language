@@ -18,12 +18,10 @@ namespace interpretator
         private static int g_StrigOfSyntaxError;
 
         private static ArrayList g_VariablesList = new ArrayList();
-
         private static ArrayList g_Tokens = new ArrayList();
-
         private static ArrayList g_Lexems = new ArrayList();
-
         private static ArrayList g_Code = new ArrayList();
+        private static ArrayList g_AllCombinations = new ArrayList();
 
         private static void addTokenToListTokensBeforeDelimiter(string pa_lexem, ref ArrayList pa_tokens, char pa_currentSymbol)
         {
@@ -311,7 +309,6 @@ namespace interpretator
 
         private static void treatmentMathOP(ref ArrayList pa_ref_identifiers, string pa_stringOfCode)
         {
-            //TODO////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             ArrayList operators = new ArrayList();
             int IDsCount = getIDsCountAndFillOperatorsList(pa_stringOfCode, ref operators);
             string varName;
@@ -357,7 +354,18 @@ namespace interpretator
                 }
             }
 
+            ArrayList assigner = new ArrayList();
+            assigner.Add(PUSH_ID_TO_STACK + ")" + pa_ref_identifiers[0] + Environment.NewLine);
+            g_Code.Add(assigner);
+            ArrayList assigneOperator = new ArrayList();
+            assigneOperator.Add(ASSIGNE + Environment.NewLine);
+            g_Code.Add(assigneOperator);
 
+            int assignerCount = 1; // every math expression have one assigner
+            for (int j=0; j<IDsCount+assignerCount; j++)
+            {
+                pa_ref_identifiers.RemoveAt(0);
+            }
         }
 
         private static int getIDsCountAndFillOperatorsList(string pa_stringOfCode, ref ArrayList pa_operatorsList)
@@ -401,7 +409,7 @@ namespace interpretator
                     writeCommand(IN,ref identifiers);
                 }else if (stringOfCode.IndexOf("=") != -1)
                 {
-                    treatmentMathOP(ref identifiers, stringOfCode);///////////////////////////////////////////////////////////////////////////////////////
+                    treatmentMathOP(ref identifiers, stringOfCode);
                 }
 
                 content = content.Substring(content.IndexOf(";")+1);
@@ -429,7 +437,33 @@ namespace interpretator
             if (errorType == -1) 
             {
                 pseudoCodeConverter(sourceCode);
+
+                int places = 0;
+                foreach (ArrayList var in g_Code)
+                {
+                    if (var.Count > 1)
+                        places++;
+                }
+
+                ArrayList variants = new ArrayList();
+                for (int i=0; i<getTasksCount(); i++)
+                {
+                    variants.Add(Convert.ToString(i));
+                }
+                generate(1,places,"",variants);
             }
+        }
+
+        private static void generate(int tmpSymbolsCount, int places, string result, ArrayList variants)
+        {
+            if (tmpSymbolsCount > places)
+            {
+                if (result!="")
+                g_AllCombinations.Add(result);
+                return;
+            }
+            foreach (string x in variants)
+                generate(tmpSymbolsCount + 1, places, result + x + " ", variants);
         }
     }
 }
