@@ -504,8 +504,6 @@ namespace interpretator
                 end.Add("return"+Environment.NewLine);
                 g_Code.Add(end);
             }
-
-            codeTasksBlocks = codeTasksBlocks.Substring(codeTasksBlocks.IndexOf("}")+1);
         }
 
         private static int getTasksCount()
@@ -552,37 +550,49 @@ namespace interpretator
         {
             string currentCode="";
             int successfully = 0;
-            for (int i=0; i<g_AllCombinations.Count; i++)
-            {
-                foreach(ArrayList stringOfCode in g_Code)
+            if (g_AllCombinations.Count > 0)
+                for (int i = 0; i < g_AllCombinations.Count; i++)
                 {
-                    if (stringOfCode.Count>1)
+                    foreach (ArrayList stringOfCode in g_Code)
                     {
-                        int variant = Convert.ToInt32((g_AllCombinations[i] as string).Substring(0, (g_AllCombinations[i] as string).IndexOf(" ")));
-                        currentCode += stringOfCode[variant];
-                        g_AllCombinations[i] = (g_AllCombinations[i] as string).Remove(0,(g_AllCombinations[i] as string).IndexOf(" ")+1);
-                    }else
-                    {
-                        currentCode += stringOfCode[0];
+                        if (stringOfCode.Count > 1)
+                        {
+                            int variant = Convert.ToInt32((g_AllCombinations[i] as string).Substring(0, (g_AllCombinations[i] as string).IndexOf(" ")));
+                            currentCode += stringOfCode[variant];
+                            g_AllCombinations[i] = (g_AllCombinations[i] as string).Remove(0, (g_AllCombinations[i] as string).IndexOf(" ") + 1);
+                        }
+                        else
+                        {
+                            currentCode += stringOfCode[0];
+                        }
                     }
-                }
 
-                StreamWriter file = new StreamWriter("bilded"+successfully+".vm");
+                    StreamWriter file = new StreamWriter("bilded" + successfully + ".vm");
+                    file.Write(currentCode);
+                    file.Close();
+
+                    /*int resultCode = 0;
+                    while (resultCode==0)
+                    {
+                        Thread.Sleep(1000);
+                        StreamReader runVMlogFile = new StreamReader("log.txt");/////////////////////////////////////////////////////////////////////////////////////////////////////
+                        resultCode = Convert.ToInt32(runVMlogFile.Read());
+                    }
+
+                    if (resultCode == SUCCESSFULLY)
+                        successfully++;*/
+
+                    currentCode = "";
+                }
+            else
+            {
+                foreach (ArrayList stringOfCode in g_Code)
+                {
+                    currentCode += stringOfCode[0];
+                }
+                StreamWriter file = new StreamWriter("bilded" + successfully + ".vm");
                 file.Write(currentCode);
                 file.Close();
-
-                /*int resultCode = 0;
-                while (resultCode==0)
-                {
-                    Thread.Sleep(1000);
-                    StreamReader runVMlogFile = new StreamReader("log.txt");/////////////////////////////////////////////////////////////////////////////////////////////////////
-                    resultCode = Convert.ToInt32(runVMlogFile.Read());
-                }
-
-                if (resultCode == SUCCESSFULLY)
-                    successfully++;*/
-
-                currentCode = "";
             }
         }
 
