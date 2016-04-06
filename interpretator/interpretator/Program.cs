@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using System.Threading;
 
 namespace interpretator
 {
@@ -14,6 +15,8 @@ namespace interpretator
             OPERATOR_EXPECTED = 6, MATH_ID_EXPECTED = 7, OPERATOR_OR_END_SYMBOL_EXPECTED = 8;
 
         const int OUT = 0, IN = 1, PUSH_ID_TO_STACK=2, PUSH_NUMBER_TO_STACK = 3, ADD=4, SUB=5, ASSIGNE=6;
+
+        const int SUCCESSFULLY=1;
 
         private static int g_StrigOfSyntaxError;
 
@@ -292,19 +295,17 @@ namespace interpretator
 
         private static bool IsNaN(string value)
         {
-            bool NaN = false;
             if (value[0] != '0')
                 for (int i = 0; i < value.Length; i++)
                 {
-                    if ((value[i]<48) || (value[i]>57))
+                    if ((value[i] < 48) || (value[i] > 57))
                     {
-                        NaN = true;
-                        break;
+                        return true;
                     }
                 }
             else
-                NaN = true;
-            return NaN;
+                return true;
+            return false;
         }
 
         private static void treatmentMathOP(ref ArrayList pa_ref_identifiers, string pa_stringOfCode)
@@ -385,14 +386,14 @@ namespace interpretator
 
         private static void pseudoCodeConverter(string pa_sourceCode)
         {
-            pa_sourceCode = pa_sourceCode.Substring(pa_sourceCode.IndexOf("main"));
-            string content = cutContentFromCode(pa_sourceCode);
+            string codeFromMainBlock = pa_sourceCode.Substring(pa_sourceCode.IndexOf("main"));
+            string mainBlockContent = cutContentFromCode(codeFromMainBlock);
             ArrayList identifiers = new ArrayList();
             identifiers = getListIdentifiersFromMainBlock();
 
-            while (content!="")
+            while (mainBlockContent!="")
             {
-                string stringOfCode = content.Substring(0, content.IndexOf(";"));
+                string stringOfCode = mainBlockContent.Substring(0, mainBlockContent.IndexOf(";"));
 
                 if (stringOfCode.IndexOf("new") != -1)
                 {
@@ -412,8 +413,99 @@ namespace interpretator
                     treatmentMathOP(ref identifiers, stringOfCode);
                 }
 
-                content = content.Substring(content.IndexOf(";")+1);
+                mainBlockContent = mainBlockContent.Substring(mainBlockContent.IndexOf(";")+1);
             }
+
+            string codeTasksBlocks= pa_sourceCode.Substring(0,pa_sourceCode.IndexOf("main"));//////////////////////////////////////////////////////////////////////////////////////////////////////
+            for (int j=0; j<getTasksCount(); j++)
+            {
+                ArrayList begin = new ArrayList();
+                begin.Add(":" + j + Environment.NewLine);
+                g_Code.Add(begin);
+                string taskBlockContent = cutContentFromCode(codeTasksBlocks);
+                while (taskBlockContent != "")
+                {
+                    string stringOfCode = taskBlockContent.Substring(0, taskBlockContent.IndexOf(";"));
+                    stringOfCode = stringOfCode.Replace(" ", "");
+
+                    if (stringOfCode.IndexOf("new") != -1)
+                    {
+                        ArrayList variants = new ArrayList();
+                        g_VariablesList.Add(stringOfCode.Replace("new",""));
+                        variants.Add(stringOfCode.Replace("new", "") + "/loc" + Environment.NewLine);
+                        g_Code.Add(variants);
+                    }
+                    else if (stringOfCode.IndexOf("out") != -1)
+                    {
+                        ArrayList variants = new ArrayList();
+                        variants.Add(Convert.ToString(OUT) + ")" + stringOfCode.Replace("out","") + Environment.NewLine);
+                        g_Code.Add(variants);
+                    }
+                    else if (stringOfCode.IndexOf("in") != -1)
+                    {
+                        ArrayList variants = new ArrayList();
+                        variants.Add(Convert.ToString(IN) + ")" + stringOfCode.Replace("in", "") + Environment.NewLine);
+                        g_Code.Add(variants);
+                    }
+                    else if (stringOfCode.IndexOf("=") != -1)
+                    {
+                        
+                        string identifierORnumber = "";
+                        string rightPartExpression = stringOfCode.Substring(stringOfCode.IndexOf("="));
+
+                        for (int i = 0; i < rightPartExpression.Length; i++)
+                        {
+                            ArrayList variants = new ArrayList();
+                            if (rightPartExpression[i]=='+')
+                            {
+                                if (IsNaN(identifierORnumber))
+                                {
+                                    variants.Add(PUSH_NUMBER_TO_STACK + ")" + identifierORnumber + Environment.NewLine);
+                                }else
+                                {
+                                    variants.Add(PUSH_ID_TO_STACK + ")" + identifierORnumber + Environment.NewLine);
+                                }
+
+                                variants.Add(Convert.ToString(ADD) + Environment.NewLine);
+                                identifierORnumber = "";
+                            }
+                            else if (rightPartExpression[i] == '-')
+                            {
+                                if (IsNaN(identifierORnumber))
+                                {
+                                    variants.Add(PUSH_NUMBER_TO_STACK + ")" + identifierORnumber + Environment.NewLine);
+                                }
+                                else
+                                {
+                                    variants.Add(PUSH_ID_TO_STACK + ")" + identifierORnumber + Environment.NewLine);
+                                }
+
+                                identifierORnumber = "";
+                                variants.Add(Convert.ToString(SUB) + Environment.NewLine);
+                            }else
+                            {
+                                identifierORnumber += rightPartExpression[i];
+                            }
+
+                            g_Code.Add(variants);
+                        }
+
+                        ArrayList assigner = new ArrayList();
+                        assigner.Add(PUSH_ID_TO_STACK + ")" + stringOfCode.Substring(0,stringOfCode.IndexOf("=")) + Environment.NewLine);
+                        g_Code.Add(assigner);
+                        ArrayList assigneOperator = new ArrayList();
+                        assigneOperator.Add(ASSIGNE + Environment.NewLine);
+                        g_Code.Add(assigneOperator);
+                    }
+
+                    taskBlockContent = taskBlockContent.Substring(taskBlockContent.IndexOf(";")+1);
+                }
+                ArrayList end = new ArrayList();
+                end.Add("return"+Environment.NewLine);
+                g_Code.Add(end);
+            }
+
+            codeTasksBlocks = codeTasksBlocks.Substring(codeTasksBlocks.IndexOf("}")+1);
         }
 
         private static int getTasksCount()
@@ -459,6 +551,7 @@ namespace interpretator
         private static void selectionCodeForVM()
         {
             string currentCode="";
+            int successfully = 0;
             for (int i=0; i<g_AllCombinations.Count; i++)
             {
                 foreach(ArrayList stringOfCode in g_Code)
@@ -473,6 +566,22 @@ namespace interpretator
                         currentCode += stringOfCode[0];
                     }
                 }
+
+                StreamWriter file = new StreamWriter("bilded"+successfully+".vm");
+                file.Write(currentCode);
+                file.Close();
+
+                /*int resultCode = 0;
+                while (resultCode==0)
+                {
+                    Thread.Sleep(1000);
+                    StreamReader runVMlogFile = new StreamReader("log.txt");/////////////////////////////////////////////////////////////////////////////////////////////////////
+                    resultCode = Convert.ToInt32(runVMlogFile.Read());
+                }
+
+                if (resultCode == SUCCESSFULLY)
+                    successfully++;*/
+
                 currentCode = "";
             }
         }
