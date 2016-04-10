@@ -7,14 +7,14 @@ namespace interpretator
 {
     class Program
     {
-        const int MAIN = 0, TASK = 1, OPERATOR = 2, TYPICAL = 3, END_SYMBOL = 4, OPEN_FIGURE = 5,
+        const int MAIN = 0, TASK = 1, OPERATOR = 2, TYPICAL = 3, END_SYMBOL = 4, OPEN_FIGURE = 5, //blocks opcodes 
             CLOSE_FIGURE = 6, ASSIGNER_ID = 7, ASSIGNER_OPERATOR = 10, ID = 11;
 
         const int BLOCK_EXPECTED = 0, OPEN_FIGURE_EXPECTED = 1, CONTENT_EXPECTED = 2,
             ID_EXPECTED = 3, END_SYMBOL_EXPECTED = 4, ASSIGNER_OPERATOR_EXPECTED = 5,
-            OPERATOR_EXPECTED = 6, MATH_ID_EXPECTED = 7, OPERATOR_OR_END_SYMBOL_EXPECTED = 8;
+            OPERATOR_EXPECTED = 6, MATH_ID_EXPECTED = 7, OPERATOR_OR_END_SYMBOL_EXPECTED = 8;  //errors opcodes 
 
-        const int OUT = 0, IN = 1, PUSH_ID_TO_STACK=2, PUSH_NUMBER_TO_STACK = 3, ADD=4, SUB=5, ASSIGNE=6;
+        const int NEW=0, OUT = 1, IN = 2, PUSH_ID_TO_STACK=3, PUSH_NUMBER_TO_STACK = 4, ADD=5, SUB=6, ASSIGNE=7; //operations opcodes 
 
         const int SUCCESSFULLY=1;
 
@@ -24,7 +24,7 @@ namespace interpretator
         private static ArrayList g_Tokens = new ArrayList();
         private static ArrayList g_Lexems = new ArrayList();
         private static ArrayList g_Code = new ArrayList();
-        private static ArrayList g_AllCombinations = new ArrayList();
+        private static ArrayList g_AllCombinations = new ArrayList(); //all combinations of code
 
         private static void addTokenToListTokensBeforeDelimiter(string pa_lexem, ref ArrayList pa_tokens, char pa_currentSymbol)
         {
@@ -399,7 +399,7 @@ namespace interpretator
                 {
                     ArrayList variants = new ArrayList();
                     g_VariablesList.Add(identifiers[0]);
-                    variants.Add(identifiers[0] + Environment.NewLine);
+                    variants.Add(Convert.ToString(NEW) + ")" + identifiers[0] + Environment.NewLine);
                     g_Code.Add(variants);
                     identifiers.RemoveAt(0);
                 }else if (stringOfCode.IndexOf("out") != -1)
@@ -432,7 +432,7 @@ namespace interpretator
                     {
                         ArrayList variants = new ArrayList();
                         g_VariablesList.Add(stringOfCode.Replace("new",""));
-                        variants.Add(stringOfCode.Replace("new", "") + "/loc" + Environment.NewLine);
+                        variants.Add(Convert.ToString(NEW) + ")" + stringOfCode.Replace("new", "") + "/loc" + Environment.NewLine);
                         g_Code.Add(variants);
                     }
                     else if (stringOfCode.IndexOf("out") != -1)
