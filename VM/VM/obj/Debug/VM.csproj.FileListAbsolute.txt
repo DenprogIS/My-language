@@ -1,0 +1,6 @@
+C:\Users\user\Documents\Visual Studio 2015\Projects\Interpriate\VM\VM\bin\Debug\VM.exe.config
+C:\Users\user\Documents\Visual Studio 2015\Projects\Interpriate\VM\VM\bin\Debug\VM.exe
+C:\Users\user\Documents\Visual Studio 2015\Projects\Interpriate\VM\VM\bin\Debug\VM.pdb
+C:\Users\user\Documents\Visual Studio 2015\Projects\Interpriate\VM\VM\obj\Debug\VM.csprojResolveAssemblyReference.cache
+C:\Users\user\Documents\Visual Studio 2015\Projects\Interpriate\VM\VM\obj\Debug\VM.exe
+C:\Users\user\Documents\Visual Studio 2015\Projects\Interpriate\VM\VM\obj\Debug\VM.pdb
