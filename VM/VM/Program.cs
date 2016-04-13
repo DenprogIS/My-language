@@ -142,22 +142,22 @@ namespace VM
                         {
                             case ADD:
                                 {
-                                    int operand2 = (g_Operands.Pop() as Wrap).number;
                                     int operand1 = (g_Operands.Pop() as Wrap).number;
+                                    int operand2 = (g_Operands.Pop() as Wrap).number;
                                     g_Operands.Push(operand1 + operand2);
                                     break;
                                 }
                             case SUB:
                                 {
-                                    int operand2 = (g_Operands.Pop() as Wrap).number;
                                     int operand1 = (g_Operands.Pop() as Wrap).number;
+                                    int operand2 = (g_Operands.Pop() as Wrap).number;
                                     g_Operands.Push(operand2 - operand1);
                                     break;
                                 }
                             case ASSIGNE:
                                 {
                                     string assignerId = (g_Operands.Pop() as Wrap).varName;
-                                    int operand = (g_Operands.Pop() as Wrap).number;
+                                    int operand = Convert.ToInt32(g_Operands.Pop());
                                     foreach (Variable var in g_LocalVariables)
                                     {
                                         if (var.name==assignerId)
