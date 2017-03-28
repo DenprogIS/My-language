@@ -7,7 +7,7 @@ namespace interpretator
 {
     class Program
     {
-        const int MAIN = 0, TASK = 1, OPERATOR = 2, TYPICAL = 3, END_SYMBOL = 4, OPEN_FIGURE = 5, //blocks opcodes 
+        const int MAIN =   0, TASK = 1, OPERATOR = 2, TYPICAL = 3, END_SYMBOL = 4, OPEN_FIGURE = 5, //blocks opcodes 
             CLOSE_FIGURE = 6, ASSIGNER_ID = 7, ASSIGNER_OPERATOR = 10, ID = 11;
 
         const int BLOCK_EXPECTED = 0, OPEN_FIGURE_EXPECTED = 1, CONTENT_EXPECTED = 2,
